@@ -2,12 +2,11 @@
   description = "Flakebox Project template";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     flakebox.url = "github:rustshop/flakebox";
   };
 
-  outputs = { self, flake-utils, flakebox }:
+  outputs = { self, flake-utils, flakebox, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         projectName = "flakebox-project";
