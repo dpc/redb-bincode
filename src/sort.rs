@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::fmt;
 
 pub trait SortOrder {
@@ -14,7 +15,13 @@ impl SortOrder for Lexicographical {
 }
 
 #[derive(Debug)]
-pub struct SortKey<T>(T);
+pub struct SortKey<T>(pub T);
+
+impl<T> Borrow<T> for SortKey<T> {
+    fn borrow(&self) -> &T {
+        &self.0
+    }
+}
 
 impl<T> redb::Value for SortKey<T>
 where

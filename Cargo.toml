@@ -4,11 +4,13 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 redb = "2.0.0"
 bincode = "2.0.0-rc.3"
+thiserror = "1.0.58"
+
+[dev-dependencies]
+anyhow = "1.0.81"
 
 [profile.dev]
 debug = "line-tables-only"
@@ -31,6 +33,3 @@ debug = false
 debug = false
 [profile.release.build-override]
 debug = false
-
-[dev-dependencies]
-anyhow = "1.0.81"
