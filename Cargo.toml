@@ -2,7 +2,14 @@
 name = "redb-bincode"
 version = "0.1.0"
 edition = "2021"
-license = "MIT"
+license = "MPL-2.0"
+authors = ["Dawid Ciężarkiewicz <dpc@dpc.pw>"]
+description = "`redb` + `bincode` wrapper around `redb`"
+documentation = "https://github.com/rustshop/redb-bincode"
+homepage = "https://github.com/rustshop/redb-bincode"
+keywords = ["database", "redb", "bincode"]
+readme = "README.md"
+repository = "https://github.com/rustshop/redb-bincode"
 
 [dependencies]
 redb = "2.0.0"
