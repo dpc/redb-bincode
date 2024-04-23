@@ -17,9 +17,9 @@ impl ReadTransaction {
     pub fn as_raw(&self) -> &redb::ReadTransaction {
         &self.0
     }
-    pub fn open_table<'a, K, V>(
+    pub fn open_table<K, V>(
         &self,
-        table_def: &TableDefinition<'a, K, V>,
+        table_def: &TableDefinition<'_, K, V>,
     ) -> Result<ReadOnlyTable<K, V, sort::Lexicographical>, TableError>
     where
         K: bincode::Encode + bincode::Decode,
@@ -63,9 +63,9 @@ impl WriteTransaction {
         &self.0
     }
 
-    pub fn open_table<'a, K, V>(
+    pub fn open_table<K, V>(
         &self,
-        table_def: &TableDefinition<'a, K, V>,
+        table_def: &TableDefinition<'_, K, V>,
     ) -> Result<Table<K, V, sort::Lexicographical>, TableError>
     where
         K: bincode::Encode + bincode::Decode,

@@ -10,9 +10,10 @@ fn main() -> anyhow::Result<()> {
         foo: u64,
         bar: String,
     }
+    const TEST_TABLE: TableDefinition<String, Something> = TableDefinition::new("test_table");
     let write_txn = db.begin_write()?;
     {
-        let mut table = write_txn.open_table::<String, Something>("test_table")?;
+        let mut table = write_txn.open_table(&TEST_TABLE)?;
         table.insert(
             "foo",
             &Something {
@@ -26,14 +27,14 @@ fn main() -> anyhow::Result<()> {
     let read_txn = db.begin_read()?;
 
     {
-        let table = read_txn.open_table::<String, Something>("test_table")?;
+        let table = read_txn.open_table(&TEST_TABLE)?;
         let v = table.get("foo")?.expect("some");
         println!("{:?}", v.value());
     }
 
     let write_txn = db.begin_write()?;
     {
-        let mut table = write_txn.open_table::<String, Something>("test_table")?;
+        let mut table = write_txn.open_table(&TEST_TABLE)?;
         let prev = table.remove("foo")?.map(|v| v.value()).transpose()?;
         println!("prev: {:?}", prev);
         let v = table.get("foo")?.map(|v| v.value()).transpose()?;
