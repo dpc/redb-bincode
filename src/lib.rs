@@ -59,6 +59,9 @@ pub use tx::*;
 mod access_guard;
 pub use access_guard::*;
 
+mod range;
+pub use range::*;
+
 pub struct ReadOnlyTable<K, V, S>
 where
     S: SortOrder + fmt::Debug + 'static,
@@ -87,16 +90,8 @@ where
             .first()?
             .map(|(k, v)| (AccessGuard::from(k), AccessGuard::from(v))))
     }
-    pub fn first_eager(&self) -> Result<Option<(K, V)>, AccessError> {
-        Ok(if let Some((k, v)) = self.first()? {
-            let k = k.value()?;
-            let v = v.value()?;
-            Some((k, v))
-        } else {
-            None
-        })
-    }
 
+    #[allow(clippy::type_complexity)]
     pub fn last(
         &self,
     ) -> Result<Option<(AccessGuard<'_, K, SortKey<S>>, AccessGuard<'_, V>)>, StorageError> {
@@ -104,16 +99,6 @@ where
             .inner
             .last()?
             .map(|(k, v)| (AccessGuard::from(k), AccessGuard::from(v))))
-    }
-
-    pub fn last_eager(&self) -> Result<Option<(K, V)>, AccessError> {
-        Ok(if let Some((k, v)) = self.last()? {
-            let k = k.value()?;
-            let v = v.value()?;
-            Some((k, v))
-        } else {
-            None
-        })
     }
 
     pub fn range<'a, Q>(
@@ -160,16 +145,6 @@ where
             })?
             .map(AccessGuard::from))
         }
-    }
-    pub fn get_eager<Q>(&self, key: &Q) -> Result<Option<V>, AccessError>
-    where
-        K: Borrow<Q>,
-        Q: bincode::Encode + ?Sized,
-    {
-        let guard = self.get(key)?;
-        let v = guard.map(|v| v.value()).transpose()?;
-
-        Ok(v)
     }
 }
 
@@ -195,6 +170,7 @@ where
         &mut self.inner
     }
 
+    #[allow(clippy::type_complexity)]
     pub fn first(
         &self,
     ) -> Result<Option<(AccessGuard<'_, K, SortKey<S>>, AccessGuard<'_, V>)>, StorageError> {
@@ -204,16 +180,7 @@ where
             .map(|(k, v)| (AccessGuard::from(k), AccessGuard::from(v))))
     }
 
-    pub fn first_eager(&self) -> Result<Option<(K, V)>, AccessError> {
-        Ok(if let Some((k, v)) = self.first()? {
-            let k = k.value()?;
-            let v = v.value()?;
-            Some((k, v))
-        } else {
-            None
-        })
-    }
-
+    #[allow(clippy::type_complexity)]
     pub fn last(
         &self,
     ) -> Result<Option<(AccessGuard<'_, K, SortKey<S>>, AccessGuard<'_, V>)>, StorageError> {
@@ -221,16 +188,6 @@ where
             .inner
             .last()?
             .map(|(k, v)| (AccessGuard::from(k), AccessGuard::from(v))))
-    }
-
-    pub fn last_eager(&self) -> Result<Option<(K, V)>, AccessError> {
-        Ok(if let Some((k, v)) = self.last()? {
-            let k = k.value()?;
-            let v = v.value()?;
-            Some((k, v))
-        } else {
-            None
-        })
     }
 
     pub fn range<'a, Q>(
@@ -277,17 +234,6 @@ where
             })?
             .map(AccessGuard::from))
         }
-    }
-
-    pub fn get_eager<Q>(&self, key: &Q) -> Result<Option<V>, AccessError>
-    where
-        K: Borrow<Q>,
-        Q: bincode::Encode + ?Sized,
-    {
-        let guard = self.get(key)?;
-        let v = guard.map(|v| v.value()).transpose()?;
-
-        Ok(v)
     }
 
     pub fn insert<KQ, VQ>(
@@ -332,66 +278,5 @@ where
             })
         }?
         .map(AccessGuard::from))
-    }
-}
-
-pub struct Range<'a, K, V, IK = &'static [u8]>
-where
-    IK: redb::Value + 'static + redb::Key,
-{
-    inner: redb::Range<'a, IK, &'static [u8]>,
-    _k: PhantomData<K>,
-    _v: PhantomData<V>,
-}
-
-// impl<'a, K, V> From<redb::Range<'a, &'static [u8], &'static [u8]>>
-//     for Range<'a, K, V, &'static [u8]>
-// {
-//     fn from(inner: redb::Range<'a, &'static [u8], &'static [u8]>) -> Self {
-//         Self {
-//             inner,
-//             _k: PhantomData,
-//             _v: PhantomData,
-//         }
-//     }
-// }
-
-impl<'a, S, K, V> From<redb::Range<'a, SortKey<S>, &'static [u8]>> for Range<'a, K, V, SortKey<S>>
-where
-    S: SortOrder + fmt::Debug,
-{
-    fn from(inner: redb::Range<'a, SortKey<S>, &'static [u8]>) -> Self {
-        Self {
-            inner,
-            _k: PhantomData,
-            _v: PhantomData,
-        }
-    }
-}
-
-impl<'a, K, V> Iterator for Range<'a, K, V, &'static [u8]> {
-    type Item = Result<(AccessGuard<'a, K>, AccessGuard<'a, V>), StorageError>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        Some(
-            self.inner
-                .next()?
-                .map(|(k, v)| (AccessGuard::from(k), AccessGuard::from(v))),
-        )
-    }
-}
-
-impl<'a, S, K, V> Iterator for Range<'a, K, V, SortKey<S>>
-where
-    S: SortOrder + fmt::Debug,
-{
-    type Item = Result<(AccessGuard<'a, K, SortKey<S>>, AccessGuard<'a, V>), StorageError>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        Some(
-            self.inner
-                .next()?
-                .map(|(k, v)| (AccessGuard::from(k), AccessGuard::from(v))),
-        )
     }
 }

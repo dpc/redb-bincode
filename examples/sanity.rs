@@ -35,9 +35,9 @@ fn main() -> anyhow::Result<()> {
     let write_txn = db.begin_write()?;
     {
         let mut table = write_txn.open_table(&TEST_TABLE)?;
-        let prev = table.remove("foo")?.map(|v| v.value()).transpose()?;
+        let prev = table.remove("foo")?.map(|v| v.value());
         println!("prev: {:?}", prev);
-        let v = table.get("foo")?.map(|v| v.value()).transpose()?;
+        let v = table.get("foo")?.map(|v| v.value());
         println!("now: {:?}", v);
     }
     write_txn.commit()?;

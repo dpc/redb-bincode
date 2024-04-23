@@ -1,18 +1,7 @@
 use std::fmt;
 use std::marker::PhantomData;
 
-use bincode::error::DecodeError;
-use redb::StorageError;
-use thiserror::Error;
-
 use crate::{SortKey, SortOrder, BINCODE_CONFIG};
-#[derive(Error, Debug)]
-pub enum AccessError {
-    #[error("Storage error: {0}")]
-    Storage(#[from] StorageError),
-    #[error("Decoding error: {0}")]
-    Decode(#[from] DecodeError),
-}
 
 pub struct AccessGuard<'a, V, IV = &'static [u8]>
 where
@@ -47,7 +36,11 @@ impl<'a, V> AccessGuard<'a, V>
 where
     V: bincode::Decode,
 {
-    pub fn value(&self) -> Result<V, bincode::error::DecodeError> {
+    pub fn value(&self) -> V {
+        self.value_try().expect("Invalid encoding")
+    }
+
+    pub fn value_try(&self) -> Result<V, bincode::error::DecodeError> {
         bincode::decode_from_slice(self.inner.value(), BINCODE_CONFIG).map(|v| v.0)
     }
 }
@@ -57,7 +50,11 @@ where
     V: bincode::Decode,
     S: SortOrder + fmt::Debug,
 {
-    pub fn value(&self) -> Result<V, bincode::error::DecodeError> {
+    pub fn value(&self) -> V {
+        self.value_try().expect("Invalid encoding")
+    }
+
+    pub fn value_try(&self) -> Result<V, bincode::error::DecodeError> {
         bincode::decode_from_slice(self.inner.value(), BINCODE_CONFIG).map(|v| v.0)
     }
 }
