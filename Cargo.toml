@@ -1,6 +1,6 @@
 [package]
 name = "redb-bincode"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 license = "MPL-2.0"
 authors = ["Dawid Ciężarkiewicz <dpc@dpc.pw>"]
