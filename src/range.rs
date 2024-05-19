@@ -53,3 +53,25 @@ where
         )
     }
 }
+impl<'a, K, V> DoubleEndedIterator for Range<'a, K, V, &'static [u8]> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        Some(
+            self.inner
+                .next_back()?
+                .map(|(k, v)| (AccessGuard::from(k), AccessGuard::from(v))),
+        )
+    }
+}
+
+impl<'a, S, K, V> DoubleEndedIterator for Range<'a, K, V, SortKey<S>>
+where
+    S: SortOrder + fmt::Debug,
+{
+    fn next_back(&mut self) -> Option<Self::Item> {
+        Some(
+            self.inner
+                .next_back()?
+                .map(|(k, v)| (AccessGuard::from(k), AccessGuard::from(v))),
+        )
+    }
+}
