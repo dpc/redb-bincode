@@ -18,6 +18,7 @@
         };
 
         buildPaths = [
+          "README.md"
           "Cargo.toml"
           "Cargo.lock"
           "src"
