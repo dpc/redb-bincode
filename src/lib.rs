@@ -1,12 +1,25 @@
 #![doc = include_str!("../README.md")]
 
+mod access_guard;
+mod database;
+mod range;
+mod readable_table;
+mod sort;
+mod tx;
+
 use std::borrow::Borrow;
 use std::cell::UnsafeCell;
 use std::marker::PhantomData;
 use std::{fmt, ops};
 
-use redb::ReadableTable;
+pub use access_guard::*;
+pub use database::*;
+pub use range::*;
+pub use readable_table::*;
+use redb::ReadableTable as _;
 pub use redb::StorageError;
+pub use sort::*;
+pub use tx::*;
 
 pub const BINCODE_CONFIG: bincode::config::Configuration<bincode::config::BigEndian> =
     bincode::config::standard()
@@ -46,21 +59,6 @@ unsafe fn with_encode_value_buf<R>(f: impl FnOnce(&mut Vec<u8>) -> R) -> R {
         res
     })
 }
-
-mod sort;
-pub use sort::*;
-
-mod database;
-pub use database::*;
-
-mod tx;
-pub use tx::*;
-
-mod access_guard;
-pub use access_guard::*;
-
-mod range;
-pub use range::*;
 
 pub struct ReadOnlyTable<K, V, S>
 where
