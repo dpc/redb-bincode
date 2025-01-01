@@ -60,7 +60,7 @@ unsafe fn with_encode_value_buf<R>(f: impl FnOnce(&mut Vec<u8>) -> R) -> R {
     })
 }
 
-pub struct ReadOnlyTable<K, V, S>
+pub struct ReadOnlyTable<K, V, S = Lexicographical>
 where
     S: SortOrder + fmt::Debug + 'static,
 {
@@ -146,7 +146,7 @@ where
     }
 }
 
-pub struct Table<'txn, K, V, S>
+pub struct Table<'txn, K, V, S = Lexicographical>
 where
     S: SortOrder + fmt::Debug + 'static,
 {
