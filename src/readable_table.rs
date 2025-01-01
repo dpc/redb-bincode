@@ -5,9 +5,9 @@ use redb::StorageError;
 
 type Result<T = (), E = StorageError> = std::result::Result<T, E>;
 
-use crate::{AccessGuard, Range, ReadOnlyTable, SortKey, SortOrder, Table};
+use crate::{AccessGuard, Lexicographical, Range, ReadOnlyTable, SortKey, SortOrder, Table};
 
-pub trait ReadableTable<K, V, S>
+pub trait ReadableTable<K, V, S = Lexicographical>
 where
     S: SortOrder + fmt::Debug + 'static,
     K: bincode::Encode + bincode::Decode,
