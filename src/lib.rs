@@ -277,4 +277,62 @@ where
         }?
         .map(AccessGuard::from))
     }
+
+    pub fn retain<F>(&mut self, mut predicate: F) -> Result<(), StorageError>
+    where
+        F: for<'f> FnMut(&'f K, &'f V) -> bool,
+    {
+        self.inner.retain(|raw_key, raw_val| {
+            let k = bincode::decode_from_slice(raw_key, BINCODE_CONFIG)
+                .map(|k| k.0)
+                .expect("Invalid encoding");
+            let v = bincode::decode_from_slice(raw_val, BINCODE_CONFIG)
+                .map(|v| v.0)
+                .expect("Invalid encoding");
+            predicate(&k, &v)
+        })
+    }
+
+    pub fn retain_in<'a, Q, F>(
+        &mut self,
+        range: impl ops::RangeBounds<Q> + 'a,
+        mut predicate: F,
+    ) -> Result<(), StorageError>
+    where
+        K: Borrow<Q>,
+        Q: bincode::Encode + ?Sized,
+        F: for<'f> FnMut(&'f K, &'f V) -> bool,
+    {
+        unsafe {
+            with_encode_key_buf(|start_bound_buf| {
+                let start_bound_size = range.start_bound().map(|bound| {
+                    bincode::encode_into_std_write(bound, start_bound_buf, BINCODE_CONFIG)
+                        .expect("encoding can't fail")
+                });
+
+                with_encode_value_buf(|end_bound_buf| {
+                    let end_bound_size = range.end_bound().map(|bound| {
+                        bincode::encode_into_std_write(bound, end_bound_buf, BINCODE_CONFIG)
+                            .expect("encoding can't fail")
+                    });
+
+                    let start_bound =
+                        start_bound_size.map(|size| SortKey(&start_bound_buf[..size]));
+                    let end_bound = end_bound_size.map(|size| SortKey(&end_bound_buf[..size]));
+                    self.inner
+                        .retain_in((start_bound, end_bound), |raw_key, raw_val| {
+                            let k = bincode::decode_from_slice(raw_key, BINCODE_CONFIG)
+                                .map(|k| k.0)
+                                .expect("Invalid encoding");
+                            let v = bincode::decode_from_slice(raw_val, BINCODE_CONFIG)
+                                .map(|v| v.0)
+                                .expect("Invalid encoding");
+                            predicate(&k, &v)
+                        })?;
+
+                    Ok(())
+                })
+            })
+        }
+    }
 }
